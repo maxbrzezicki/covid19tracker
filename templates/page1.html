@@ -1,0 +1,73 @@
+<html>
+<title>Admiting patient</title>
+<body>
+<h1>COVID-19 TRACKER LIVE</h1>
+<h2 style="color:red">{{msg}}</h2>
+<i>Milton Keynes University Hospital Patient List</i>
+<hr>
+<h2>Active</h2>
+	<table>
+	<tr>
+	<td>ID</td>
+	<td>MRN</td>
+	<td>Age</td>
+	<td>Comorb</td>
+	<td>Clin Frailty</td>
+	
+	<td></td>
+	<td></td>
+	</tr>
+
+	{%for i in patientsMain %}
+	{%if i[5] ==1 %}
+	<tr>
+	<td>{{i[0]}}</td>
+	<td>{{i[1]}}</td>
+	<td>{{i[2]}}</td>
+	<td>{{i[3]}}</td>
+	<td>{{i[4]}}</td>
+	
+	<td><a href="patients1?MRN={{i[1]}}"><button>ADD NOTE</button></a></td>
+	<td><a href="deduct?MRN={{i[1]}}"><button>DEDUCT</button></a></td>
+	</tr>
+	{%endif%}
+	{%endfor%}
+	
+	</table>
+<a href="addPatient"><button>ADMIT A NEW PATIENT</button></a>
+<hr>
+
+
+<h2>Deducted</h2>
+	<table>
+	<tr>
+	<td>ID</td>
+	<td>MRN</td>
+	<td>Age</td>
+	<td>Comorb</td>
+	<td>Clin Frailty</td>
+
+	<td></td>
+	<td></td>
+	</tr>
+
+	{%for i in patientsMain %}
+	{%if i[5] ==0%}
+	<tr>
+	<td>{{i[0]}}</td>
+	<td>{{i[1]}}</td>
+	<td>{{i[2]}}</td>
+	<td>{{i[3]}}</td>
+	<td>{{i[4]}}</td>
+	
+	
+	</tr>
+	{%endif%}
+	{%endfor%}
+	
+	</table>
+<hr>
+
+<i><b>COVID-19 Patients Tracker</b> early alpha 0.1</i>
+</body>
+</html>
