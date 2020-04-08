@@ -5,10 +5,11 @@ Current version: early alpha 0.1
 Update 06/04
 Initial repository deployed
 
+Update 08/04
+Stats modules added
+Graphics design 
+
 TO DO:
-1. Graphical design
-2. Test in clinical env to ensure all files OK
-3. Start dashboard based on data
-4. Deploy mortality / discharge calculator
+1. Testing & troubleshooting
 
 mbrzezicki@neurologicalosciety.org
