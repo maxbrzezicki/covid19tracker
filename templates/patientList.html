@@ -1,5 +1,4 @@
 <html>
-<head>
 <style>
 /**
 * Template Name: Dashio
@@ -3489,15 +3488,211 @@ ul.chat-available-user li a:hover {
 }
 
 </style>
+<title>DASHBOARD</title>
 
-</head>
+  <head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
 {%if msg%}
 alert("{{msg}}")
 {%endif%}
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
 
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Date', 'Reviewed patients', ],
+		     {%for i in statsDict['allStatsDictDay']%}
+		  ['{{i['currUpToDate'].strftime("%d")}}/{{i['currUpToDate'].strftime("%m")}}',{{i['noOfActive']}}],
+		  {%endfor%}
+       
+        ]);
+
+        var options = {
+          title: 'PATIENTS REVIEWED',
+		   pointSize: 15,
+		   legend: { position: "none" },
+		   fontName:'Ruda',
+	vAxis: { 
+              
+              viewWindowMode:'explicit',
+              viewWindow:{
+                
+                min:0
+              }},
+          series: {
+                0: { pointShape: 'circle' },},
+        
+        };
+
+        var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+      }
+    </script>
+  
+    <script type="text/javascript">
+
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart1);
+
+      function drawChart1() {
+        var data1 = google.visualization.arrayToDataTable([
+          ['Date', 'Daily Outreach Dchg.', 'Daily ITU to Ward', 'Daily Home ' ],
+		     {%for i in statsDict['allStatsDictDay']%}
+		  ['{{i['currUpToDate'].strftime("%d")}}/{{i['currUpToDate'].strftime("%m")}}',{{i['noOfDchgFromITUList']}},{{i['noOfDchgFromITU']}},{{i['noOfDchgHome']}}],
+		  {%endfor%}
+       
+        ]);
+
+        var options1 = {
+          title: 'DAILY DISCHARGES',
+		   pointSize: 15,
+		   fontName:'Ruda',
+          legend: { position: "top" },
+		  series: {
+		  
+                 0: { pointShape: 'circle',  color: '#173F5F' },
+                1: { pointShape: 'circle' , color: '#22242a' },
+                2: { pointShape: 'circle' , color:'#e63d2f'},},
+        
+        };
+
+        var chart1 = new google.visualization.ColumnChart(document.getElementById('chart1_div'));
+        chart1.draw(data1, options1);
+      }
+    </script>
+ 
+
+ <script type="text/javascript">
+
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart2);
+
+      function drawChart2() {
+        var data2 = google.visualization.arrayToDataTable([
+          ['Date', 'Discharge from Retreival', 'Discharge from ITU', 'Discharge Home' ],
+		  {% set culmDchgFromList = namespace(value=0) %}
+		  {% set culmDchgFromITU = namespace(value=0) %}
+		  {% set culmDchgHome = namespace(value=0) %}
+		  
+		  {%for i in range(0,statsDict['allStatsDictDay']|length) %}
+		  ['{{statsDict['allStatsDictDay'][i]['currUpToDate'].strftime("%d")}}/{{statsDict['allStatsDictDay'][i]['currUpToDate'].strftime("%m")}}',		   
+{%set culmDchgFromList.value=culmDchgFromList.value+statsDict['allStatsDictDay'][i]['noOfDchgFromITUList'] %}{{culmDchgFromList.value}},
+{%set culmDchgFromITU.value=culmDchgFromITU.value+statsDict['allStatsDictDay'][i]['noOfDchgFromITU'] %}{{culmDchgFromITU.value}},
+{%set culmDchgHome.value=culmDchgHome.value+statsDict['allStatsDictDay'][i]['noOfDchgHome'] %}{{culmDchgHome.value}},
+		  ],
+		  {%endfor%}
+       
+        ]);
+
+        var options2 = {
+          title: 'CULMINATIVE DISCHARGES',
+		   pointSize: 15,
+		   legend: { position: "top" },
+		   fontName:'Ruda',
+          series: {
+                0: { pointShape: 'circle',  color: '#173F5F' },
+                1: { pointShape: 'circle' , color: '#22242a' },
+                2: { pointShape: 'circle' , color:'#e63d2f'},},
+        
+        };
+
+        var chart2 = new google.visualization.AreaChart(document.getElementById('chart2_div'));
+        chart2.draw(data2, options2);
+      }
+    </script>
+   
+   
+ 
+ <script type="text/javascript">
+
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart3);
+
+      function drawChart3() {
+        var data3 = google.visualization.arrayToDataTable([
+          ['Date', 'DAILY NEW PATIENTS' ],
+		  
+		  {%for i in range(0,statsDict['allStatsDictDay']|length) %}
+		  ['{{statsDict['allStatsDictDay'][i]['currUpToDate'].strftime("%d")}}/{{statsDict['allStatsDictDay'][i]['currUpToDate'].strftime("%m")}}',		   
+		  {{statsDict['allStatsDictDay'][i]['noOfNewAdmissions']}},		   
+		  ],
+		  {%endfor%}
+       
+        ]);
+
+        var options3 = {
+          title: 'DAILY NEW PT REVIEWS',
+		   pointSize: 15,
+		   fontName:'Ruda',
+		   legend: { position: "none" },
+          series: {
+		  
+                0: { pointShape: 'circle' },
+          
+                1: { pointShape: 'circle' },},
+        
+        };
+
+        var chart3 = new google.visualization.ColumnChart(document.getElementById('chart3_div'));
+        chart3.draw(data3, options3);
+      }
+    </script>
+  
+  
+  <script type='text/javascript'>
+	
+	//Gauges
+	
+    google.charts.load('current', {'packages':['gauge']});
+    google.charts.setOnLoadCallback(drawGauge);
+
+    var gaugeOptions1 = {min: 0, max: 100, yellowFrom: 3, yellowTo: 7,
+      redFrom: 7, redTo: 100, minorTicks: 1};
+    var gauge;
+
+    function drawGauge() {
+      gaugeData = new google.visualization.DataTable();
+      gaugeData.addColumn('number', 'Mortality');
+      
+      gaugeData.addRows(1);
+      gaugeData.setCell(0,0,{{statsDict['noOfDeaths']/patientsMain |length*100}});
+      ;
+
+      gauge = new google.visualization.Gauge(document.getElementById('gauge_div'));
+      gauge.draw(gaugeData, gaugeOptions1);
+    }
 </script>
-<header class="header black-bg">
+   
+   
+   <script type='text/javascript'>
+	
+	//Gauges
+	
+    google.charts.load('current', {'packages':['gauge']});
+    google.charts.setOnLoadCallback(drawGauge);
+{%if statsDict['lengthOfStayHospital']%}
+    var gaugeOptions = {min: 0, max: {{statsDict['lengthOfStayHospital'][-1].days+5}}, yellowFrom: 7, yellowTo: 10,
+      redFrom: 10, redTo: {{statsDict['lengthOfStayHospital'][-1].days+5}}n, minorTicks: 1};
+    var gauge;
+
+    function drawGauge() {
+      gaugeData = new google.visualization.DataTable();
+      gaugeData.addColumn('number', 'Median stay');
+      
+      gaugeData.addRows(1);
+      gaugeData.setCell(0,0,{{statsDict['medianLengthOfStayHospital'].days}});
+      ;
+
+      gauge = new google.visualization.Gauge(document.getElementById('gauge_div1'));
+      gauge.draw(gaugeData, gaugeOptions);
+    }
+	{%endif%}
+</script>
+    
+  </head>
+<body>
+  <header class="header black-bg">
       <div class="sidebar-toggle-box">
         <div class="fa fa-bars tooltips" data-placement="right" data-original-title="Toggle Navigation"></div>
       </div>
@@ -3524,44 +3719,144 @@ alert("{{msg}}")
         
 		
 
-            <div class="content-panel" style="min-height:600px;padding:10px 10px 10px 10px;">
+            <div class="content-panel" style="padding:10px 10px 10px 10px;">
 			
-<h1>Admit a patient</h1>
+			
+<h1 style="color:#000;">DASHBOARD - MILTON KEYNES UNIVERSITY HOSPITAL</h1>
 <hr>
-<img style="float:right; height:70%; padding-right:20px;" src="https://images.squarespace-cdn.com/content/v1/5b5f1d4e9d5abb9699cb8a75/1584980646013-4VKNTQZ1VSOOZ75TJ891/ke17ZwdGBToddI8pDm48kDHUNFJBrpfO4Tyoa4uFeEd7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UbE5IWAZV_Kj7pDi92rsuQ7DOohjptt_XCYfaRvVJnxgm4bjm9DAHF2kOsIZRJKXnA/Clinical+Frailty+Scale.png?format=1000w">
-<img style="float:right;"src="https://i.imgur.com/hNtVNIi.png">
-<table cellspacing="10" style="color:#000;margin-left:-10px;">
-<form method="POST" action="addPatient2">
-<tr>
-	<td>Name</td>
-	<td><input type="text" name="PName"></td>
-	</tr>
-	<tr>
-	
-	<td>MRN</td>
-	<td><input type="text" name="MRN"></td>
-		</tr>
-	<tr>
-	<td>Age</td>
-		<td><input type="text" name="Age"></td>
-	</tr>
-	
-	<tr>	
-	<td>Score + PMH</td>
-	<td><input type="text" name="Comorb"></td>
-
-</tr><tr>
-	<td>Clin Frailty</td>
-	<td><input type="number" name="ClinFrailty"></td>
-	</tr>
-
-<tr><td></td><td><input type="submit" value="ADMIT NEW PATIENT"></td></tr>
+<h2 style="color:#000;">So far, we've looked after a total of <b style="">{{patientsMain |length}} patients</b> with suspected or confirmed COVID-19<br><br></h2>
+<div style="float: right; width:70%;">
+<div id="chart_div"></div>	
+<div id="chart2_div" style=""></div>
+</div>
+<p style="color: #000; font-size:16px;">
+Currently there are:<br>
+<b>{{statsDict['noOfActive']}} ACTIVE PATIENTS ON ITU & RETREIVAL LIST</b><br>
+<b>{{statsDict['noOfDchgFromITU']}} DISCHARGED FROM ITU</b><br>
+<b>{{statsDict['noOfDchgFromITUList']}} DISCHARGED FROM ITU OUTREACH LIST</b><br>
+<b>{{statsDict['noOfDchgHome']}} WENT HOME</b><br>
+<b>{{statsDict['noOfDeaths']}} DIED</b><br>
+<br>
+Survival stats:<br>
+<b style="color:#ff6b6b;">{{statsDict['noOfDeaths']/patientsMain |length*100}}% OVERALL MORTALITY</b><br>
+<b style="">{{(statsDict['noOfDchgFromITU']+statsDict['noOfDchgFromITUList'])/patientsMain |length*100}}% SURVIVAL TO DISCHARGE FROM ITU/LIST</b><br>
+<div id="gauge_div" style="float:left; height: 25%;"></div>
+<div id="gauge_div1" style="float:left;height: 25%;"></div>
+<div style="clear: both;"></div>
 
 
+<p style="font-size:16px; color:#000;">
 
-</form>
-</table>
 
 <br>
-</div></div>
+<b style="">{{statsDict['noOfDchgHome']/patientsMain |length*100}}% SURVIVAL TO DISCHARGE FROM HOSPITAL</b><br>
+{%if statsDict['lengthOfStayHospital'] %}<br>
+<b>LENGTH OF STAY IN HOSPITAL: median {{statsDict['medianLengthOfStayHospital'].days}}days  (RANGE {{statsDict['lengthOfStayHospital'][0].days}} to {{statsDict['lengthOfStayHospital'][-1].days}}days)  </b><br>
+{% else %}
+Unable to calculate Hospital stay. Please review your data.
+{% endif %}
+{%if statsDict['lengthOfStayITU']%}
+<b>LENGTH OF STAY IN ITU: median {{statsDict['medianLengthOfStayITU'].days}}days  (RANGE {{statsDict['lengthOfStayITU'][0].days}} to {{statsDict['lengthOfStayITU'][-1].days}}days)  </b><br>
+{% else %}
+Unable to calculate ITU stay. Please review your data.
+{% endif %}<i>for surviving patients</i>
+<br><hr>
+
+<i>This is based on {{patientsMain |length}} patients. Length of stay only for patients that were discharged</i><br>
+<i>List current as of: </i> <b>{{statsDict['currUpToDate'].strftime("%a")}}, {{statsDict['currUpToDate'].strftime("%d")}}/{{statsDict['currUpToDate'].strftime("%B")}}/{{statsDict['currUpToDate'].strftime("%Y")}} at {{statsDict['currUpToDate'].strftime("%X")}}BST</b>
+</p>
+<br>
+<br>
+<div style="height:60px; width:100%; background:#2f323a; margin-left:-10px; margin-bottom:10px; color:#fff; padding-top:10px; padding-left:20px; padding-bottom:10px;">
+<h2>Active patients</h2>
+</div>
+<div id="chart3_div" style="width:45%;float:right;"></div>
+<div style="">
+<table  cellspacing="10" style="margin-left:-10px;">
+	<tr style="">
+	
+	<td><b>Name</b></td>
+	<td><b>MRN</b></td>
+	<td><b>Age</b></td>
+	<td><b>Comorb</b></td>
+	<td><b>Clin Frailty</b></td>
+	
+	
+	<td></td>
+	<td></td>
+	<td></td>
+	</tr>
+
+	{%for i in patientsMain %}
+	{%if i[5] ==1 %}
+	<tr>
+	
+	<td><a href="display?MRN={{i[1]}}">{{i[6]}}</a></td>
+	<td><a href="display?MRN={{i[1]}}">{{i[1]}}</a></td>
+	<td>{{i[2]}}</td>
+	<td>{{i[3]}}</td>
+	<td>{{i[4]}}</td>
+	
+	<!--<td><a href="display?MRN={{i[1]}}"><button>VIEW</button></a></td>-->
+	<td><a href="patients1?MRN={{i[1]}}"><button>ADD NOTE</button></a></td>
+	<td><a href="deduct?MRN={{i[1]}}"><button>DISCHARGE</button></a></td>
+	</tr>
+	{%endif%}
+	{%endfor%}
+	<tr><td><a href="addPatient"><button>ADMIT A NEW PATIENT</button></a></td></tr>
+	</table>
+	</div>
+	
+<div style="clear: both;"></div>
+	<div style="height:60px; width:100%; background:#2f323a; margin-left:-10px; margin-top:10px; margin-bottom:10px; color:#fff; padding-top:10px; padding-left:20px; padding-bottom:10px;">
+
+
+
+<h2>Discharged patients</h2>
+</div>
+<div id="chart1_div" style="width:45%;float:right;"></div>
+	<table cellspacing="10" style="margin-left:-10px;">
+	<tr>
+	<td>Name</td>
+	<td>MRN</td>
+	<td>Age</td>
+	<td>Comorb</td>
+	<td>Clin Frailty</td>
+
+	
+	
+	</tr>
+
+	{%for i in patientsMain %}
+	{%if i[5] ==0%}
+	<tr>
+	<td><a href="display?MRN={{i[1]}}">{{i[6]}}</a></td>
+	<td>{{i[1]}}</td>
+	<td>{{i[2]}}</td>
+	<td>{{i[3]}}</td>
+	<td>{{i[4]}}</td>
+	
+
+	</tr>
+	{%endif%}
+	{%endfor%}
+<TR><TD><a href="/displayFrom?from=Discharge%20from%20ITU&days=&labelName=CRP&valueName=5"><button>SEE DISCHARGED ITU PATIENTS</button></a></TD>	</TR>	
+<TR><TD><a href="/displayFrom?from=Discharge%20from%20ITU%20list&days=&labelName=CRP&valueName=5"><button>SEE DISCHARGED OUTREACH LIST</button></a></TD>	</TR>	
+	</table>
+
+
+<div style="clear: both;"></div>
+
+<hr>
+
+</div>
+
+            
+            </div>
+        </div>  
+	
+	
+	
+<div style="margin-left:20px; margin-top:20px; margin-bottom:20px;"><i><b>COVID-19 Patients Tracker</b> early alpha 0.2</i></style>
+</body>
 </html>
