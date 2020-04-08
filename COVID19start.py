@@ -1,15 +1,185 @@
 from flask import Flask, render_template, request
 import sqlite3 as sql
 from os import path
-
-
+from datetime import datetime, timedelta, date
+from operator import itemgetter, attrgetter
+from statistics import median
 ####=====MAIN SETTINGS======================
 #ROOT = path.dirname(path.realpath(__file__))
 app = Flask(__name__)   
 
 
 ####=====FUNCTION DEFINITIONS======================
+##=====STATS
 
+def generateStatsForDay(givenDay,allNotes):
+    
+    noOfDchgFromITU=0
+    noOfDchgFromITUList=0
+    noOfDchgHome=0
+    allMRNs=[]
+    
+    for i in allNotes:
+        if i[15]==givenDay:
+            allMRNs.append(i[13])
+            if i[16]=="Discharge from ITU":
+                noOfDchgFromITU+=1
+            elif i[16]=="OFF ITU list":
+                noOfDchgFromITUList+=1
+            elif i[16]=="Home":
+                noOfDchgHome+=1
+    #lets check MRNs
+    #this is actually no of all REVIEWED 
+    noOfActive=len(set(allMRNs))
+    
+    statsDictDay={
+    "currUpToDate":givenDay,
+    "noOfActive":noOfActive,
+    "noOfDchgFromITU":noOfDchgFromITU,
+    "noOfDchgFromITUList":noOfDchgFromITUList,
+    "noOfDchgHome":noOfDchgHome,
+    "allMRNs":allMRNs,
+  #  "noOfNewAdmissions":noOfNewAdmissions,
+    }
+    return statsDictDay
+    
+def generateStats():
+    allPatients=getPatients()
+    allNotes=getAllNotes()
+    
+
+    noOfActive=0
+    for i in allPatients:
+        if i[5]:
+            noOfActive+=1
+
+
+    noOfDchgFromITU=0
+    noOfDchgFromITUList=0
+    noOfDchgHome=0
+    noOfDeaths=0
+    allDates=[]
+    dischargeDates=[]
+    dischargeDatesITU=[]
+    for i in allNotes:
+        allDates.append(i[15]) #we're gonna needs this later
+        if i[16]=="Discharge from ITU":
+            noOfDchgFromITU+=1
+            dischargeDatesITU.append([i[13],i[15]])
+        elif i[16]=="OFF ITU list":
+            noOfDchgFromITUList+=1
+        elif i[16]=="Home":
+            noOfDchgHome+=1
+            dischargeDates.append([i[13],i[15]])
+        elif i[16]=="Death":
+            noOfDeaths+=1
+            
+            
+    allDates=list(dict.fromkeys(allDates))
+    allDates=sorted(allDates)
+    
+    
+    
+    currUpToDate=allDates[-1]
+    allStatsDictDay=[]
+    noOfNewAdmissions=[]
+    for i in allDates:
+        allStatsDictDay.append(generateStatsForDay(i,allNotes))
+    
+    noOfNewAdmissions.append((len(set(allStatsDictDay[0]['allMRNs']))))
+    for i in range(1,len(allStatsDictDay)):
+        noOfNewAdmissions.append(len(list(set(allStatsDictDay[i]['allMRNs']) - set(allStatsDictDay[i-1]['allMRNs']))))
+    
+    for i in range(0,len(allStatsDictDay)):
+        allStatsDictDay[i]['noOfNewAdmissions']=noOfNewAdmissions[i]
+    
+    lengthOfStayHospital=[]
+    for i in dischargeDates:
+        print("So, lets go through notes")
+        z=getNotes(i[0])
+        tempListDates=[]
+        tempListDates.clear()
+        for ii in z:
+            tempListDates.append(ii[15])
+        tempListDates=sorted(tempListDates)
+        lengthOfStayHospital.append(tempListDates[-1]-tempListDates[0])
+    try:    
+        medianLengthOfStayHospital=median(lengthOfStayHospital)
+    except:
+        medianLengthOfStayHospital="Unable to calculate"
+        
+    lengthOfStayITU=[]
+    for i in dischargeDatesITU:
+        print("So, lets go through notes")
+        z=getNotes(i[0])
+        tempListDates=[]
+        tempListDates.clear()
+        for ii in z:
+            tempListDates.append(ii[15])
+        tempListDates=sorted(tempListDates)
+        lengthOfStayITU.append(tempListDates[-1]-tempListDates[0])
+    
+    try:    
+        medianLengthOfStayITU=median(lengthOfStayITU)
+    except:
+        medianLengthOfStayITU="Unable to calculate"
+    
+    
+    statsDict={
+    "noOfActive":noOfActive,
+    "noOfDeaths":noOfDeaths,
+    "noOfDchgFromITU":noOfDchgFromITU,
+    "noOfDchgFromITUList":noOfDchgFromITUList,
+    "noOfDchgHome":noOfDchgHome,
+    "currUpToDate":currUpToDate,
+    "allStatsDictDay":allStatsDictDay,
+    "lengthOfStayHospital":sorted(lengthOfStayHospital),
+    "lengthOfStayITU":sorted(lengthOfStayITU),
+    "medianLengthOfStayHospital":medianLengthOfStayHospital,
+    "medianLengthOfStayITU":medianLengthOfStayITU,
+    }
+    
+   
+    return statsDict
+    
+def statsDchgFrom(fromThis,givenDay):
+    MRNsDchg=[]
+    dchgData=[]
+    z=[]
+    allNotes=getAllNotes()
+    for i in allNotes:
+        if givenDay:
+            if i[15]>=givenDay:
+                if i[16]==fromThis:
+                    MRNsDchg.append([i[13],i[15]])
+        else:
+            if i[16]==fromThis:
+                MRNsDchg.append([i[13],i[15]])
+    
+    for i in MRNsDchg:
+        for ii in allNotes:
+            if ii[13]==i[0]:
+                if ii[15]>=i[1]:
+                   z.append(ii) 
+        dchgData.append(z)
+        
+        z=[]
+    return dchgData
+    
+                
+@app.route("/displayFrom", methods=["GET"])
+def displayFrom():
+    fromD=request.args.get('from')
+    if request.args.get('days'):
+        daysD=datetime.strptime(request.args.get('days'), '%Y-%m-%d %H:%M:%S.%f')
+    else:
+        daysD=0
+    #daysD=datetime(2020, 4, 7, 0, 0)
+    labelName=request.args.get('labelName')  
+    valueName=int(request.args.get('valueName'))
+   # return render_template('displayFrom.html',patientData=getPtInfo(MRN), patientDB=getNotes(MRN))
+    return render_template('displayFrom.html', patientDB=statsDchgFrom(fromD,daysD),daysD=request.args.get('days'),diffDate7=datetime.today() - timedelta(days=7),fromD=fromD,paraMeter={'labelName':labelName,'valueName':valueName})
+    
 ##=====GET INFO
 def getPatients():
 	patientsMain=[]
@@ -20,14 +190,19 @@ def getPatients():
 	cur.execute('SELECT * FROM Patients')
 	rows = cur.fetchall()
 	for row in rows:
-		patientsMain.append([row[0],row[1],row[2],row[3],row[4],row[5]])
+		patientsMain.append([row[0],row[1],row[2],row[3],row[4],row[5],row[6]])
 	con.close()
 	return patientsMain
   
 @app.route("/patientList")
 @app.route("/")
-def patientList():	
-    return render_template('page1.html', patientsMain=getPatients())    
+def patientList():
+        #try:
+            #getPatients()
+        return render_template('patientList.html', patientsMain=getPatients(),statsDict=generateStats())    
+        #except:
+         #   return render_template('addPatient.html', msg="There was a problem with the Data Base. Maybe it is empty! Please try adding a patient")
+    
     
 def getPtInfo(MRN):
 	patientInfo=[]
@@ -38,9 +213,24 @@ def getPtInfo(MRN):
 	cur.execute('SELECT * FROM Patients WHERE MRN=? ',[MRN])
 	rows = cur.fetchall()
 	for row in rows:
-		patientInfo.append([row[0],row[1],row[2],row[3],row[4],row[5]])
+		patientInfo.append([row[0],row[1],row[2],row[3],row[4],row[5],row[6]])
 	con.close()
 	return patientInfo
+
+
+    
+def getAllNotes():
+	allNotes=[]
+	con = sql.connect("covid.sql")
+	print ("Opened database successfully")
+	con.row_factory = sql.Row
+	cur = con.cursor()
+	cur.execute('SELECT * FROM Labs')
+	rows = cur.fetchall()
+	for row in rows:
+		allNotes.append([row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],datetime.strptime(row[15], '%Y-%m-%dT%H:%M'),row[16]])
+	con.close()
+	return allNotes
 
     
 def getNotes(MRN):
@@ -52,19 +242,19 @@ def getNotes(MRN):
 	cur.execute('SELECT * FROM Labs WHERE MRN=? ',[MRN])
 	rows = cur.fetchall()
 	for row in rows:
-		notesMain.append([row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],row[15]])
+		notesMain.append([row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],datetime.strptime(row[15], '%Y-%m-%dT%H:%M'),row[16]])
 	con.close()
 	return notesMain
 
 
 ##=====INSERT INFO
-def enterPatient(MRN,Age,Comorb,ClinFrailty):
+def enterPatient(MRN,Age,Comorb,ClinFrailty,PName):
     con = sql.connect("covid.sql")
     print ("Opened database successfully for adding a new patient")
     con.row_factory = sql.Row
     cur = con.cursor()
-    cur.execute("INSERT INTO `Patients`(`id`,`MRN`,`Age`,`Comorb`,`ClinFrailty`, `Active`) VALUES (NULL,?,?,?,?,1)",
-               [MRN,Age,Comorb,ClinFrailty])
+    cur.execute("INSERT INTO `Patients`(`id`,`MRN`,`Age`,`Comorb`,`ClinFrailty`, `Active`, `PName`) VALUES (NULL,?,?,?,?,1,?)",
+               [MRN,Age,Comorb,ClinFrailty,PName])
     con.commit()
     print ("Commited!")
     con.close()
@@ -79,17 +269,18 @@ def addPatient2():
     Age=request.form['Age']
     Comorb=request.form['Comorb']
     ClinFrailty=request.form['ClinFrailty']
-    enterPatient(MRN,Age,Comorb,ClinFrailty)
-    return render_template('page1.html', patientsMain=getPatients(), msg="Addedd successfully")
+    PName=request.form['PName']
+    enterPatient(MRN,Age,Comorb,ClinFrailty,PName)
+    return render_template('addNote.html', patientData=getPtInfo(MRN), patientDB=getNotes(MRN),msg="Patient admitted successfully! Now enter the note.")
 
     
-def enterNote(Wcc,Lymph,Plt,LDH,CRP,Na,Creat,Ddimer,LofO2,PctgO2,Temp,RR,OtherIx,MRN,Date):
+def enterNote(Wcc,Lymph,Plt,LDH,CRP,Na,Creat,Ddimer,LofO2,PctgO2,Temp,RR,OtherIx,MRN,Date,Location):
     con = sql.connect("covid.sql")
     print ("Opened database successfully for entering a note")
     con.row_factory = sql.Row
     cur = con.cursor()
-    cur.execute("INSERT INTO `Labs`(`id`,`Wcc`,`Lymph`,`Plt`,`LDH`,`CRP`,`Na`,`Creat`,`Ddimer`,`LofO2`,`Temp`,`RR`,`OtherIx`,`MRN`,`PctgO2`,`Date`) VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-               [Wcc,Lymph,Plt,LDH,CRP,Na,Creat,Ddimer,LofO2,Temp,RR,OtherIx,MRN,PctgO2,Date])
+    cur.execute("INSERT INTO `Labs`(`id`,`Wcc`,`Lymph`,`Plt`,`LDH`,`CRP`,`Na`,`Creat`,`Ddimer`,`LofO2`,`Temp`,`RR`,`OtherIx`,`MRN`,`PctgO2`,`Date`, `Location`) VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+               [Wcc,Lymph,Plt,LDH,CRP,Na,Creat,Ddimer,LofO2,Temp,RR,OtherIx,MRN,PctgO2,Date,Location])
     con.commit()
     print ("Commited!")
     con.close()
@@ -97,7 +288,7 @@ def enterNote(Wcc,Lymph,Plt,LDH,CRP,Na,Creat,Ddimer,LofO2,PctgO2,Temp,RR,OtherIx
 @app.route("/patients1", methods=["GET","POST"])
 def addNote():
     MRN=request.args.get('MRN')
-    return render_template('page3.html', patientData=getPtInfo(MRN), patientDB=getNotes(MRN))
+    return render_template('addNote.html', patientData=getPtInfo(MRN), patientDB=getNotes(MRN))
     
 @app.route("/patients2", methods=["POST"])
 def addNote2():
@@ -117,8 +308,8 @@ def addNote2():
     PctgO2=request.form['PctgO2']
     Date=request.form['Date']
     Location=request.form['Location']
-    enterNote(Wcc,Lymph,Plt,LDH,CRP,Na,Creat,Ddimer,LofO2,PctgO2,Temp,RR,OtherIx,MRN,Date)
-    return render_template('page1.html', patientsMain=getPatients(),msg="Note added")
+    enterNote(Wcc,Lymph,Plt,LDH,CRP,Na,Creat,Ddimer,LofO2,PctgO2,Temp,RR,OtherIx,MRN,Date,Location)
+    return render_template('addNote.html', patientData=getPtInfo(MRN), patientDB=getNotes(MRN),msg="Note added")
 
 #=====DEDUCT
 @app.route("/deduct", methods=["GET"])
@@ -131,4 +322,13 @@ def discharge():
 	con.commit()
 	print ("Commited!")
 	con.close()
-	return render_template('page1.html', patientsMain=getPatients(),msg="Patient successfully deducted,-")
+	return render_template('patientList.html', patientsMain=getPatients(),statsDict=generateStats(),msg="Successfully deducted")    
+
+@app.route("/1")
+def route():
+    return render_template("index.html")
+#=====DISPLAY
+@app.route("/display", methods=["GET"])
+def display():
+    MRN=request.args.get('MRN')
+    return render_template('display.html',patientData=getPtInfo(MRN), patientDB=getNotes(MRN))
