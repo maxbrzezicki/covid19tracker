@@ -3491,6 +3491,86 @@ ul.chat-available-user li a:hover {
 }
 
 </style>
+{%macro SOFA(patientDB) %}
+
+{%set pO2FiO2ratio=(patientDB[17]|int*7.5)/(patientDB[14]|int/100) %}
+
+
+{%set SOFA=0%}
+{%if pO2FiO2ratio>400 %}
+{%set SOFA=SOFA+0 %} pts
+{%elif pO2FiO2ratio<=400 and  pO2FiO2ratio>300%}
+{%set SOFA=SOFA+1 %}
+{%elif pO2FiO2ratio<=300 and  pO2FiO2ratio>200%}
+{%set SOFA=SOFA+2 %}
+{%elif pO2FiO2ratio<=200 and  pO2FiO2ratio>100%}
+	{%if patientDB[18][:4]=="CPAP" or patientDB[18][:5]=="BIPAP" %}
+	{%set SOFA=SOFA+3 %}
+	{%else%}
+	{%set SOFA=SOFA+2 %}
+	{%endif%}
+{%elif pO2FiO2ratio<=100%}
+	{%if patientDB[18][:4]=="CPAP" or patientDB[18][:5]=="BIPAP"%}
+	{%set SOFA=SOFA+4 %}
+	{%else%}
+	{%set SOFA=SOFA+2 %}
+	{%endif%}
+{%endif%}
+
+
+
+{%if patientDB[3]>=150 %}
+{%set SOFA=SOFA+0 %}
+{%elif patientDB[3]<150 and patientDB[3]>100%}
+{%set SOFA=SOFA+1 %}
+{%elif patientDB[3]<=100 and patientDB[3]>50 %}
+{%set SOFA=SOFA+2 %}
+{%elif patientDB[3]<=50 and patientDB[3]<20 %}
+{%set SOFA=SOFA+3 %}
+{%elif patientDB[3]<=20 %}
+{%set SOFA=SOFA+4 %}
+{%endif%}
+
+{%if patientDB[22]<20 %}
+{%set SOFA=SOFA+0 %}
+{%elif patientDB[22]>=20 and patientDB[22]<=32%}
+{%set SOFA=SOFA+1 %}
+{%elif patientDB[22]>=33 and patientDB[22]<=101 %}
+{%set SOFA=SOFA+2 %}
+{%elif patientDB[22]<=102 and patientDB[22]<=204 %}
+{%set SOFA=SOFA+3 %}
+{%elif patientDB[22]>204 %}
+{%set SOFA=SOFA+4 %}
+{%endif%}
+
+
+
+
+{%if patientDB[7]<110 %}
+{%set SOFA=SOFA+0 %}
+{%elif patientDB[7]>=110 and patientDB[7]<=170%}
+{%set SOFA=SOFA+1 %}
+{%elif patientDB[7]>=170 and patientDB[7]<=299 %}
+{%set SOFA=SOFA+2 %}
+{%elif patientDB[7]<=300 and patientDB[7]<=440 %}
+{%set SOFA=SOFA+3 %}
+{%elif patientDB[7]>440 %}
+{%set SOFA=SOFA+4 %}
+{%endif%}
+
+{%if patientDB[21]>=70 and patientDB[19]<0.01%}
+{%set SOFA=SOFA+0 %}
+{%elif patientDB[21]<70 and patientDB[19]<0.01%}
+{%set SOFA=SOFA+1 %}
+{%elif patientDB[19]>0.01 and patientDB[19]<=0.1 %}
+{%set SOFA=SOFA+3 %}
+{%elif patientDB[19]>0.1%}
+{%set SOFA=SOFA+4 %}
+{%endif%}
+{{SOFA}}
+
+{%-endmacro%}
+
 
        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
    
@@ -3657,11 +3737,11 @@ function drawChart2() {
 function drawChart3() {
   var data = new google.visualization.DataTable();
   data.addColumn('string', 'Name');
-  data.addColumn('number', 'L of O2');
-  data.addColumn('number', '% O2');
   data.addColumn('number', 'RR');
   data.addColumn('number', 'Temp');
-  data.addColumn('number', 'O2 x 0.1%');
+  
+  data.addColumn('number', 'P/F ratio');
+  data.addColumn('number', 'SOFA');
 
   data.addColumn({
     type: 'string',
@@ -3671,12 +3751,12 @@ function drawChart3() {
   
 
   data.addRows([
-			['{{patientDB[0][16]}} \n {{patientDB[0][15]}}', {{patientDB[0][9]}},{{patientDB[0][14]}},{{patientDB[0][11]}},{{patientDB[0][10]}},{{patientDB[0][14]| int *patientDB[0][9]| int*0.1}},'START'],
+			['{{patientDB[0][16]}} \n {{patientDB[0][15]}}',{{patientDB[0][11]}},{{patientDB[0][10]}},{{patientDB[0][17]| int /patientDB[0][14]| int*100}},{{SOFA(patientDB[0])}},'START'],
           {%for i in range(1,patientDB|length)%}
 		  {%if patientDB[i-1][16]==patientDB[i][16]%}
-		  ['{{patientDB[i][16]}} \n {{patientDB[i][15]-patientDB[0][15]}}', {{patientDB[i][9]}},{{patientDB[i][14]}},{{patientDB[i][11]}},{{patientDB[i][10]}},{{patientDB[i][14]| int *patientDB[i][9]| int*0.1}},null],
+		  ['{{patientDB[i][16]}} \n {{patientDB[i][15]-patientDB[0][15]}}',{{patientDB[i][11]}},{{patientDB[i][10]}},{{patientDB[i][17]| int /patientDB[i][14]| int*100}},{{SOFA(patientDB[i])}},null],
 		  {%else%}
-		  ['{{patientDB[i][16]}} \n {{patientDB[i][15]-patientDB[0][15]}}', {{patientDB[i][9]}},{{patientDB[i][14]}},{{patientDB[i][11]}},{{patientDB[i][10]}},{{patientDB[i][14]| int *patientDB[i][9]| int*0.1}},"{{patientDB[i][16]}}"],
+		  ['{{patientDB[i][16]}} \n {{patientDB[i][15]-patientDB[0][15]}}',{{patientDB[i][11]}},{{patientDB[i][10]}},{{patientDB[i][17]| int /patientDB[i][14]| int*100}},{{SOFA(patientDB[i])}},"{{patientDB[i][16]}}"],
 		  {%endif%}
 		  
 		  {%endfor%}
@@ -3689,11 +3769,11 @@ function drawChart3() {
       title:'Obs / Oxygen Req \n[{{patientData[0][6]}}: MRN {{patientData[0][1]}}]',
 	  series: {
              
-            0: { color: '#3CAEA3' },
-            1: { color: '#20638B' },
-            2: { color: '#20636B' },
-            3: { color: '#20633B' },
-			4: { color: '#FFC30F' }},
+            0: { color: '#20636B' },
+            1: { color: '#20633B' },
+            2: { color: '#20638B' },
+            3: { color: '#C67000' },
+			4: { color: '#FF4500' }},
 			legend: { position: "top" },
 			   	 fontName:'Ruda',
              hAxis : { 
@@ -3714,7 +3794,9 @@ function drawChart3() {
 
     </script>
   
+
   
+    
   
 <script type='text/javascript'>
 
@@ -3777,6 +3859,72 @@ function drawChart4() {
 
     </script>
   
+  
+  
+   
+<script type='text/javascript'>
+
+//CVS
+      google.charts.load('current', {'packages':['annotationchart']});
+      google.charts.setOnLoadCallback(drawChart5);
+
+
+
+function drawChart5() {
+  var data = new google.visualization.DataTable();
+  data.addColumn('string', 'Name');
+  data.addColumn('number', 'MAP');
+  data.addColumn('number', 'NA x100');
+  data.addColumn('number', 'Terl x100');
+
+  data.addColumn({
+    type: 'string',
+    role: 'annotation'
+  });
+  
+  
+
+  data.addRows([
+			['{{patientDB[0][16]}} \n {{patientDB[0][15]}}', {{patientDB[0][21]}},{{patientDB[0][19]*100}},{{patientDB[0][20]*100}},'START'],
+          {%for i in range(1,patientDB|length)%}
+		  {%if patientDB[i-1][16]==patientDB[i][16]%}
+		  ['{{patientDB[i][16]}} \n {{patientDB[0][15]-patientDB[i][15]}}', {{patientDB[i][21]}},{{patientDB[i][19]*100}},{{patientDB[i][20]*100}},null],
+		  {%else%}
+		  ['{{patientDB[i][16]}} \n {{patientDB[0][15]-patientDB[i][15]}}', {{patientDB[i][21]}},{{patientDB[i][19]*100}},{{patientDB[i][19]*100}},"{{patientDB[i][16]}}"],
+		  {%endif%}
+		  
+		  {%endfor%}
+  ]);
+
+
+
+  var chart5 = new google.visualization.LineChart(document.getElementById('chart_div5'));
+    chart5.draw(data, {
+      title:'CVS function \n [{{patientData[0][6]}}: MRN {{patientData[0][1]}}]',
+	  series: {
+
+            0: { color: '#FF4500' },
+            1: { color: '#FF8C00' },
+            2: { color: '#FF7F50' },},
+			          
+          	 fontName:'Ruda',
+             hAxis : { 
+        textStyle : {
+            fontSize: 16
+        }
+
+    },
+		   legend:'top',
+          pointSize: 20,
+        tooltip: {
+            isHtml: true
+        }
+		
+    });
+}
+
+    </script>
+  
   </head>
   
 <body>
@@ -3810,7 +3958,7 @@ function drawChart4() {
         
 		
 
-            <div class="content-panel" style="min-height:2000px;padding:10px 10px 10px 10px;">
+            <div class="content-panel" style=" min-height:2500px;padding:10px 10px 10px 10px;">
 <h1 style="color:#000;"><a style="color:#000" href="/">MAIN MENU </a><span style="color:#4ECDC4;">>></span> {{patientData[0][6]}} [{{patientData[0][1]}}]</h1>
 <hr>
 <i style="font-size:16px; color:#000;"><b>{{patientData[0][6]}}</b>, MRN: {{patientData[0][1]}}, is a {{patientData[0][2]}}y/o patient on {{patientDB[-1][16]}}, with PMH of {{patientData[0][3][2:]}}<br>
@@ -3833,12 +3981,19 @@ This is his {{patientDB[-1][15]-patientDB[0][15]}} of admission.<br>
 <td>Na+</td>
 <td>Creatinine</td>
 <td>D-dimer</td>
+<td>Bili</td>
 <td>L of oxygen</td>
 <td>Temp</td>
 <td>RR</td>
 <td>Other investigations</td>
-<td>Pctg of Oxygen</td>
+<td>FiO2</td>
 <td>Location</td>
+<td>pO2</td>
+<td>Mode of Vent</td>
+<td>NA</td>
+<td>Terl</td>
+<td>MAP</td>
+<td>SOFA</td>
 
 
 </tr>
@@ -3853,26 +4008,34 @@ This is his {{patientDB[-1][15]-patientDB[0][15]}} of admission.<br>
 <td>{{i[6]}}</td>
 <td>{{i[7]}}</td>
 <td>{{i[8]}}</td>
+<td>{{i[22]}}</td>
 <td>{{i[9]}}</td>
 <td>{{i[10]}}</td>
 <td>{{i[11]}}</td>
 <td>{{i[12]}}</td>
 <td>{{i[14]}}</td>
 <td>{{i[16]}}</td>
+<td>{{i[17]}}</td>
+<td>{{i[18]}}</td>
+<td>{{i[19]}}</td>
+<td>{{i[20]}}</td>
+<td>{{i[21]}}</td>
+<td>{{SOFA(i)}}</td>
+
 </tr>
 {%endfor%}
 </table>
 
-
 <hr>
-<div id="chart_div3" style="margin-left:-50px;width:700px; height: 500px; float:left"></div>
+<div id="chart_div3" style="margin-left:-50px;width:1200px; height: 500px; float:left"></div>
 <div id="chart_div" style="width:600px;height: 500px;float:left;"></div>
 <div id="chart_div2" style="margin-left:-50px;width: 600px; height: 500px;float:left;"></div>
 <div id="chart_div4" style="width: 600px; height: 500px;float:left;"></div>
+<div id="chart_div5" style="width: 600px; height: 500px;float:left;"></div>
 
 </div></div>
 
-
+<div style="clear: both;"></div>
 <br>
 
 

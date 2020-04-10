@@ -3547,8 +3547,13 @@ alert("{{msg}}");
 <td>Temp</td>
 <td>RR</td>
 <td>Other investigations</td>
-<td>Pctg of Oxygen</td>
+<td>FiO2</td>
 <td>Location</td>
+<td>pO2</td>
+<td>Mode of Vent</td>
+<td>NA</td>
+<td>Terl</td>
+<td>MAP</td>
 
 
 </tr>
@@ -3569,12 +3574,17 @@ alert("{{msg}}");
 <td>{{i[12]}}</td>
 <td>{{i[14]}}</td>
 <td>{{i[16]}}</td>
+<td>{{i[17]}}</td>
+<td>{{i[18]}}</td>
+<td>{{i[19]}}</td>
+<td>{{i[20]}}</td>
+<td>{{i[21]}}</td>
 </tr>
 {%endfor%}
 </table>
 
  <form method="POST" action="patients2">
-            <p></p>
+    
            
 <input type="text" name="MRN" hidden="hidden" value="{{patientData[0][1]}}">
 Wcc:<br>
@@ -3599,8 +3609,25 @@ Temp:<br>
 <input type="number" step="0.01" name="Temp" value=""><br>
 RR:<br>
 <input type="number" name="RR" value=""><br>
-PctgO2:<br>
+FiO2(%):<br>
 <input type="number" name="PctgO2" value=""><br>
+
+
+    pO2<br>
+<input type="number" step="0.01" name="pO2" value=""><br>
+
+Mode of Vent (+PS):<br>
+<input type="text" name="modeOfVent" value=""><br>
+
+Norad:<br>
+<input  type="number" step="0.01"  name="Norad" value=""><br>
+
+Terl:<br>
+<input  type="number" step="0.01"  name="Terl" value=""><br>
+
+MAP:<br>
+<input  type="number"  name="MAP" value=""><br>
+
 Other Ix:<br>
 <input type="text" name="OtherIx" value=""><br>
 
@@ -3622,9 +3649,7 @@ Date:<br>
 <input type="datetime-local" name="Date" value=""><br>
 
 			     <input type="submit" value="Submit">
-        </form>
-
-        
+        </form>    
 
 </div>
 

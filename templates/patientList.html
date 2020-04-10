@@ -3740,8 +3740,8 @@ Currently there are:<br>
 Survival stats:<br>
 <b style="color:#ff6b6b;">{{statsDict['noOfDeaths']/patientsMain |length*100}}% OVERALL MORTALITY</b><br>
 <b style="">{{(statsDict['noOfDchgFromITU']+statsDict['noOfDchgFromITUList'])/patientsMain |length*100}}% SURVIVAL TO DISCHARGE FROM ITU/LIST</b><br>
-<div id="gauge_div" style="float:left; height: 25%;"></div>
-<div id="gauge_div1" style="float:left;height: 25%;"></div>
+<div id="gauge_div" style="float:left; width: 15%;"></div>
+<div id="gauge_div1" style="float:left;width: 15%;"></div>
 <div style="clear: both;"></div>
 
 
@@ -3759,7 +3759,9 @@ Unable to calculate Hospital stay. Please review your data.
 <b>LENGTH OF STAY IN ITU: median {{statsDict['medianLengthOfStayITU'].days}}days  (RANGE {{statsDict['lengthOfStayITU'][0].days}} to {{statsDict['lengthOfStayITU'][-1].days}}days)  </b><br>
 {% else %}
 Unable to calculate ITU stay. Please review your data.
-{% endif %}<i>for surviving patients</i>
+{% endif %}
+<br>
+<i>(for surviving patients)</i>
 <br><hr>
 
 <i>This is based on {{patientsMain |length}} patients. Length of stay only for patients that were discharged</i><br>
@@ -3840,6 +3842,7 @@ Unable to calculate ITU stay. Please review your data.
 	</tr>
 	{%endif%}
 	{%endfor%}
+<TR><TD><a href="/displayFrom?from=ED&days=&labelName=CRP&valueName=5"><button>SEE DISCHARGED ED (ADM. TO ITU) PATIENTS</button></a></TD>	</TR>	
 <TR><TD><a href="/displayFrom?from=Discharge%20from%20ITU&days=&labelName=CRP&valueName=5"><button>SEE DISCHARGED ITU PATIENTS</button></a></TD>	</TR>	
 <TR><TD><a href="/displayFrom?from=Discharge%20from%20ITU%20list&days=&labelName=CRP&valueName=5"><button>SEE DISCHARGED OUTREACH LIST</button></a></TD>	</TR>	
 	</table>

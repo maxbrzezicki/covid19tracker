@@ -3492,8 +3492,88 @@ ul.chat-available-user li a:hover {
 }
 
 </style>
+{%macro SOFA(patientDB) %}
+
+{%set pO2FiO2ratio=(patientDB[17]|int*7.5)/(patientDB[14]|int/100) %}
+
+
+{%set SOFA=0%}
+{%if pO2FiO2ratio>400 %}
+{%set SOFA=SOFA+0 %} pts
+{%elif pO2FiO2ratio<=400 and  pO2FiO2ratio>300%}
+{%set SOFA=SOFA+1 %}
+{%elif pO2FiO2ratio<=300 and  pO2FiO2ratio>200%}
+{%set SOFA=SOFA+2 %}
+{%elif pO2FiO2ratio<=200 and  pO2FiO2ratio>100%}
+	{%if patientDB[18][:4]=="CPAP" or patientDB[18][:5]=="BIPAP" %}
+	{%set SOFA=SOFA+3 %}
+	{%else%}
+	{%set SOFA=SOFA+2 %}
+	{%endif%}
+{%elif pO2FiO2ratio<=100%}
+	{%if patientDB[18][:4]=="CPAP" or patientDB[18][:5]=="BIPAP"%}
+	{%set SOFA=SOFA+4 %}
+	{%else%}
+	{%set SOFA=SOFA+2 %}
+	{%endif%}
+{%endif%}
+
+
+
+{%if patientDB[3]>=150 %}
+{%set SOFA=SOFA+0 %}
+{%elif patientDB[3]<150 and patientDB[3]>100%}
+{%set SOFA=SOFA+1 %}
+{%elif patientDB[3]<=100 and patientDB[3]>50 %}
+{%set SOFA=SOFA+2 %}
+{%elif patientDB[3]<=50 and patientDB[3]<20 %}
+{%set SOFA=SOFA+3 %}
+{%elif patientDB[3]<=20 %}
+{%set SOFA=SOFA+4 %}
+{%endif%}
+
+{%if patientDB[22]<20 %}
+{%set SOFA=SOFA+0 %}
+{%elif patientDB[22]>=20 and patientDB[22]<=32%}
+{%set SOFA=SOFA+1 %}
+{%elif patientDB[22]>=33 and patientDB[22]<=101 %}
+{%set SOFA=SOFA+2 %}
+{%elif patientDB[22]<=102 and patientDB[22]<=204 %}
+{%set SOFA=SOFA+3 %}
+{%elif patientDB[22]>204 %}
+{%set SOFA=SOFA+4 %}
+{%endif%}
+
+
+
+
+{%if patientDB[7]<110 %}
+{%set SOFA=SOFA+0 %}
+{%elif patientDB[7]>=110 and patientDB[7]<=170%}
+{%set SOFA=SOFA+1 %}
+{%elif patientDB[7]>=170 and patientDB[7]<=299 %}
+{%set SOFA=SOFA+2 %}
+{%elif patientDB[7]<=300 and patientDB[7]<=440 %}
+{%set SOFA=SOFA+3 %}
+{%elif patientDB[7]>440 %}
+{%set SOFA=SOFA+4 %}
+{%endif%}
+
+{%if patientDB[21]>=70 and patientDB[19]<0.01%}
+{%set SOFA=SOFA+0 %}
+{%elif patientDB[21]<70 and patientDB[19]<0.01%}
+{%set SOFA=SOFA+1 %}
+{%elif patientDB[19]>0.01 and patientDB[19]<=0.1 %}
+{%set SOFA=SOFA+3 %}
+{%elif patientDB[19]>0.1%}
+{%set SOFA=SOFA+4 %}
+{%endif%}
+{{SOFA}}
+
+{%-endmacro%}
 
        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
 
 <script type='text/javascript'>
 
@@ -3517,8 +3597,32 @@ function drawChart() {
   
 
  data.addRows([
+			{%if paraMeter['labelName']=="SOFA"%}
 			
-			{%for a in range(0,patientDB|length)%}
+			
+			
+			
+			{%for a in range(0,lenCT)%}
+			['Day {{a}}',
+			{%for i in patientDB%}
+			{%if i[a]%}
+			{{SOFA(i[a])}},
+			{%else%}
+			null,
+			{%endif%}
+			{%endfor%}
+			
+			''],
+			{%endfor%}
+			
+			
+			
+			
+			
+			
+			{%else%}
+			
+			{%for a in range(0,lenCT)%}
 			['Day {{a}}',
 			{%for i in patientDB%}
 			{%if i[a]%}
@@ -3532,7 +3636,7 @@ function drawChart() {
 			{%endfor%}
 			
 			
-		
+		{%endif%}
 			
      
   ]);
@@ -3614,8 +3718,11 @@ Shown from: {{daysD}}<br>{%endif%}
 
 <a href="/displayFrom?from={{fromD}}&days={{daysD}}&labelName=CRP&valueName=5">CRP</a><span style="color:#4ECDC4;">>></span> 
 <a href="/displayFrom?from={{fromD}}&days={{daysD}}&labelName=Creatinine&valueName=7">Creat</a><span style="color:#4ECDC4;">>></span> 
-<a href="/displayFrom?from={{fromD}}&days={{daysD}}&labelName=L of O2&valueName=9">L of O2</a><span style="color:#4ECDC4;">>></span> 
-<a href="/displayFrom?from={{fromD}}&days={{daysD}}&labelName=Temperature&valueName=10">Temp</a>
+<a href="/displayFrom?from={{fromD}}&days={{daysD}}&labelName=pO2&valueName=17">pO2</a><span style="color:#4ECDC4;">>></span> 
+<a href="/displayFrom?from={{fromD}}&days={{daysD}}&labelName=Temperature&valueName=10">Temp</a><span style="color:#4ECDC4;">>></span> 
+<a href="/displayFrom?from={{fromD}}&days={{daysD}}&labelName=MAP&valueName=21">MAP</a><span style="color:#4ECDC4;">>></span> 
+<a href="/displayFrom?from={{fromD}}&days={{daysD}}&labelName=SOFA&valueName=21">SOFA</a><span style="color:#4ECDC4;">>></span> 
+
 </p>
 <hr>
 
