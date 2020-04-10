@@ -178,7 +178,12 @@ def displayFrom():
     labelName=request.args.get('labelName')  
     valueName=int(request.args.get('valueName'))
    # return render_template('displayFrom.html',patientData=getPtInfo(MRN), patientDB=getNotes(MRN))
-    return render_template('displayFrom.html', patientDB=statsDchgFrom(fromD,daysD),daysD=request.args.get('days'),diffDate7=datetime.today() - timedelta(days=7),fromD=fromD,paraMeter={'labelName':labelName,'valueName':valueName})
+    patientDB=statsDchgFrom(fromD,daysD)
+    lenCT=0
+    for i in patientDB:
+        if len(i)>lenCT:
+            lenCT=len(i)
+    return render_template('displayFrom.html', lenCT=lenCT, patientDB=patientDB,daysD=request.args.get('days'),diffDate7=datetime.today() - timedelta(days=7),fromD=fromD,paraMeter={'labelName':labelName,'valueName':valueName})
     
 ##=====GET INFO
 def getPatients():
@@ -228,7 +233,7 @@ def getAllNotes():
 	cur.execute('SELECT * FROM Labs')
 	rows = cur.fetchall()
 	for row in rows:
-		allNotes.append([row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],datetime.strptime(row[15], '%Y-%m-%dT%H:%M'),row[16]])
+		allNotes.append([row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],datetime.strptime(row[15], '%Y-%m-%dT%H:%M'),row[16],row[17],row[18],row[19],row[20],row[21],row[22]])
 	con.close()
 	return allNotes
 
@@ -242,7 +247,7 @@ def getNotes(MRN):
 	cur.execute('SELECT * FROM Labs WHERE MRN=? ',[MRN])
 	rows = cur.fetchall()
 	for row in rows:
-		notesMain.append([row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],datetime.strptime(row[15], '%Y-%m-%dT%H:%M'),row[16]])
+		notesMain.append([row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],datetime.strptime(row[15], '%Y-%m-%dT%H:%M'),row[16],row[17],row[18],row[19],row[20],row[21],row[22]])
 	con.close()
 	return notesMain
 
@@ -274,13 +279,13 @@ def addPatient2():
     return render_template('addNote.html', patientData=getPtInfo(MRN), patientDB=getNotes(MRN),msg="Patient admitted successfully! Now enter the note.")
 
     
-def enterNote(Wcc,Lymph,Plt,LDH,CRP,Na,Creat,Ddimer,LofO2,PctgO2,Temp,RR,OtherIx,MRN,Date,Location):
+def enterNote(Wcc,Lymph,Plt,LDH,CRP,Na,Creat,Ddimer,LofO2,PctgO2,Temp,RR,OtherIx,MRN,Date,Location,pO2,modOfVent,Norad,Terl,MAP,Bili):
     con = sql.connect("covid.sql")
     print ("Opened database successfully for entering a note")
     con.row_factory = sql.Row
     cur = con.cursor()
-    cur.execute("INSERT INTO `Labs`(`id`,`Wcc`,`Lymph`,`Plt`,`LDH`,`CRP`,`Na`,`Creat`,`Ddimer`,`LofO2`,`Temp`,`RR`,`OtherIx`,`MRN`,`PctgO2`,`Date`, `Location`) VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-               [Wcc,Lymph,Plt,LDH,CRP,Na,Creat,Ddimer,LofO2,Temp,RR,OtherIx,MRN,PctgO2,Date,Location])
+    cur.execute("INSERT INTO `Labs`(`id`,`Wcc`,`Lymph`,`Plt`,`LDH`,`CRP`,`Na`,`Creat`,`Ddimer`,`LofO2`,`Temp`,`RR`,`OtherIx`,`MRN`,`PctgO2`,`Date`, `Location`, `pO2`, `modOfVent`,`Norad`,`Terl`,`MAP`,`Bili`) VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+               [Wcc,Lymph,Plt,LDH,CRP,Na,Creat,Ddimer,LofO2,Temp,RR,OtherIx,MRN,PctgO2,Date,Location,pO2,modOfVent,Norad,Terl,MAP,Bili])
     con.commit()
     print ("Commited!")
     con.close()
@@ -308,7 +313,13 @@ def addNote2():
     PctgO2=request.form['PctgO2']
     Date=request.form['Date']
     Location=request.form['Location']
-    enterNote(Wcc,Lymph,Plt,LDH,CRP,Na,Creat,Ddimer,LofO2,PctgO2,Temp,RR,OtherIx,MRN,Date,Location)
+    pO2=request.form['pO2']
+    modOfVent=request.form['modOfVent']
+    Norad=request.form['Norad']
+    Terl=request.form['Terl']
+    MAP=request.form['MAP']
+    Bili=request.form['Bili']
+    enterNote(Wcc,Lymph,Plt,LDH,CRP,Na,Creat,Ddimer,LofO2,PctgO2,Temp,RR,OtherIx,MRN,Date,Location,pO2,modOfVent,Norad,Terl,MAP,Bili)
     return render_template('addNote.html', patientData=getPtInfo(MRN), patientDB=getNotes(MRN),msg="Note added")
 
 #=====DEDUCT
