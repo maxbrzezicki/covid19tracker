@@ -9,6 +9,11 @@ Update 08/04
 Stats modules added
 Graphics design 
 
+Update 10/04
+Stats extended
+Bug fixes
+Across-ITU view introduced
+
 TO DO:
 1. Testing & troubleshooting
 
