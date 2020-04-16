@@ -12,6 +12,72 @@ app = Flask(__name__)
 ####=====FUNCTION DEFINITIONS======================
 ##=====STATS
 
+def getSOFA(patientDB):
+    pO2FiO2ratio=(int(patientDB[17])*7.5)/(int(patientDB[14])/100) 
+    SOFA=0
+    
+    if pO2FiO2ratio>400:
+        SOFA=SOFA+0
+    elif pO2FiO2ratio<=400 and  pO2FiO2ratio>300:
+        SOFA=SOFA+1 
+    elif pO2FiO2ratio<=300 and  pO2FiO2ratio>200:
+        SOFA=SOFA+2 
+    elif pO2FiO2ratio<=200 and  pO2FiO2ratio>100:
+        if patientDB[18][:4]=="CPAP" or patientDB[18][:5]=="BIPAP":
+            SOFA=SOFA+3 
+        else:
+            SOFA=SOFA+2 
+    elif pO2FiO2ratio<=100:
+        if patientDB[18][:4]=="CPAP" or patientDB[18][:5]=="BIPAP":
+            SOFA=SOFA+4 
+        else:
+            SOFA=SOFA+2 
+   
+    if patientDB[3]>=150:
+        SOFA=SOFA+0 
+    elif patientDB[3]<150 and patientDB[3]>100:
+        SOFA=SOFA+1 
+    elif patientDB[3]<=100 and patientDB[3]>50: 
+        SOFA=SOFA+2 
+    elif patientDB[3]<=50 and patientDB[3]<20:
+        SOFA=SOFA+3 
+    elif patientDB[3]<=20:
+        SOFA=SOFA+4 
+
+    if patientDB[22]<20:
+        SOFA=SOFA+0 
+    elif patientDB[22]>=20 and patientDB[22]<=32:
+        SOFA=SOFA+1 
+    elif patientDB[22]>=33 and patientDB[22]<=101:
+        SOFA=SOFA+2 
+    elif patientDB[22]<=102 and patientDB[22]<=204:
+        SOFA=SOFA+3 
+    elif patientDB[22]>204:
+        SOFA=SOFA+4 
+    
+    if patientDB[7]<110:
+        SOFA=SOFA+0 
+    elif patientDB[7]>=110 and patientDB[7]<=170:
+        SOFA=SOFA+1 
+    elif patientDB[7]>=170 and patientDB[7]<=299:
+        SOFA=SOFA+2 
+    elif patientDB[7]<=300 and patientDB[7]<=440:
+        SOFA=SOFA+3 
+    elif patientDB[7]>440:
+        SOFA=SOFA+4 
+    
+    if patientDB[21]>=70 and patientDB[19]<0.01:
+        SOFA=SOFA+0 
+    elif patientDB[21]<70 and patientDB[19]<0.01:
+        SOFA=SOFA+1 
+    elif patientDB[19]>0.01 and patientDB[19]<=0.1:
+        SOFA=SOFA+3 
+    elif patientDB[19]>0.1:
+        SOFA=SOFA+4 
+    return SOFA
+    
+    
+
 def generateStatsForDay(givenDay,allNotes):
     
     noOfDchgFromITU=0
@@ -50,7 +116,7 @@ def generateStats():
 
     noOfActive=0
     for i in allPatients:
-        if i[5]:
+        if i[5]==1:
             noOfActive+=1
 
 
@@ -179,11 +245,22 @@ def displayFrom():
     valueName=int(request.args.get('valueName'))
    # return render_template('displayFrom.html',patientData=getPtInfo(MRN), patientDB=getNotes(MRN))
     patientDB=statsDchgFrom(fromD,daysD)
-    lenCT=0
+    listOfMRNs=[]
     for i in patientDB:
-        if len(i)>lenCT:
-            lenCT=len(i)
-    return render_template('displayFrom.html', lenCT=lenCT, patientDB=patientDB,daysD=request.args.get('days'),diffDate7=datetime.today() - timedelta(days=7),fromD=fromD,paraMeter={'labelName':labelName,'valueName':valueName})
+        listOfMRNs.append(i[0][13])
+    listOfMRNs=set(listOfMRNs)
+    lenTT=len(listOfMRNs)
+    
+    chartData={}
+    #lets transpose this
+    for i in listOfMRNs:
+        chartDataM=[]
+        for ii in patientDB:
+            if ii[0][13]==i:
+                chartDataM.append(ii)
+        chartData[i]=chartDataM
+    
+    return render_template('displayFrom.html', chartData=chartData, lenTT=lenTT, listOfMRNs=listOfMRNs, patientDB=patientDB, daysD=request.args.get('days'),diffDate7=datetime.today() - timedelta(days=7),fromD=fromD,paraMeter={'labelName':labelName,'valueName':valueName})
     
 ##=====GET INFO
 def getPatients():
@@ -233,7 +310,7 @@ def getAllNotes():
 	cur.execute('SELECT * FROM Labs')
 	rows = cur.fetchall()
 	for row in rows:
-		allNotes.append([row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],datetime.strptime(row[15], '%Y-%m-%dT%H:%M'),row[16],row[17],row[18],row[19],row[20],row[21],row[22]])
+		allNotes.append([row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],datetime.strptime(row[15], '%Y-%m-%dT%H:%M'),row[16],row[17],row[18],row[19],row[20],row[21],row[22],row[23],row[24]])
 	con.close()
 	return allNotes
 
@@ -247,7 +324,7 @@ def getNotes(MRN):
 	cur.execute('SELECT * FROM Labs WHERE MRN=? ',[MRN])
 	rows = cur.fetchall()
 	for row in rows:
-		notesMain.append([row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],datetime.strptime(row[15], '%Y-%m-%dT%H:%M'),row[16],row[17],row[18],row[19],row[20],row[21],row[22]])
+		notesMain.append([row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],datetime.strptime(row[15], '%Y-%m-%dT%H:%M'),row[16],row[17],row[18],row[19],row[20],row[21],row[22],row[23],row[24]])
 	con.close()
 	return notesMain
 
@@ -284,8 +361,8 @@ def enterNote(Wcc,Lymph,Plt,LDH,CRP,Na,Creat,Ddimer,LofO2,PctgO2,Temp,RR,OtherIx
     print ("Opened database successfully for entering a note")
     con.row_factory = sql.Row
     cur = con.cursor()
-    cur.execute("INSERT INTO `Labs`(`id`,`Wcc`,`Lymph`,`Plt`,`LDH`,`CRP`,`Na`,`Creat`,`Ddimer`,`LofO2`,`Temp`,`RR`,`OtherIx`,`MRN`,`PctgO2`,`Date`, `Location`, `pO2`, `modOfVent`,`Norad`,`Terl`,`MAP`,`Bili`) VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-               [Wcc,Lymph,Plt,LDH,CRP,Na,Creat,Ddimer,LofO2,Temp,RR,OtherIx,MRN,PctgO2,Date,Location,pO2,modOfVent,Norad,Terl,MAP,Bili])
+    cur.execute("INSERT INTO `Labs`(`id`,`Wcc`,`Lymph`,`Plt`,`LDH`,`CRP`,`Na`,`Creat`,`Ddimer`,`LofO2`,`Temp`,`RR`,`OtherIx`,`MRN`,`PctgO2`,`Date`, `Location`, `pO2`, `modOfVent`,`Norad`,`Terl`,`MAP`,`Bili`,`PFratio`,`SOFA`) VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+               [Wcc,Lymph,Plt,LDH,CRP,Na,Creat,Ddimer,LofO2,Temp,RR,OtherIx,MRN,PctgO2,Date,Location,pO2,modOfVent,Norad,Terl,MAP,Bili,int(pO2)/int(PctgO2),getSOFA([0,Wcc,int(Lymph),int(Plt),LDH,int(CRP),int(Na),int(Creat),int(Ddimer),int(LofO2),Temp,RR,OtherIx,MRN,int(PctgO2),Date,Location,int(pO2),modOfVent,int(Norad),int(Terl),int(MAP),int(Bili)])])
     con.commit()
     print ("Commited!")
     con.close()
@@ -335,6 +412,19 @@ def discharge():
 	con.close()
 	return render_template('patientList.html', patientsMain=getPatients(),statsDict=generateStats(),msg="Successfully deducted")    
 
+@app.route("/toWard", methods=["GET"])
+def dischargetoWard():
+	MRN=request.args.get('MRN')
+	con = sql.connect("covid.sql")
+	print ("Opened database successfully for patient discharge")
+	cur = con.cursor()
+	cur.execute('UPDATE Patients SET "Active"="3" WHERE "MRN"=?',[MRN])
+	con.commit()
+	print ("Commited!")
+	con.close()
+	return render_template('patientList.html', patientsMain=getPatients(),statsDict=generateStats(),msg="Successfully deducted")    
+
+
 @app.route("/1")
 def route():
     return render_template("index.html")
@@ -343,3 +433,7 @@ def route():
 def display():
     MRN=request.args.get('MRN')
     return render_template('display.html',patientData=getPtInfo(MRN), patientDB=getNotes(MRN))
+    
+@app.route("/stats", methods=["GET"])
+def statsPage():
+    return render_template('stats.html')
