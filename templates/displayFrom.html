@@ -3583,11 +3583,12 @@ ul.chat-available-user li a:hover {
 
 //yo
 
+
 function drawChart() {
   var data = new google.visualization.DataTable();
   data.addColumn('string', 'Name');
-  {%for i in patientDB %}
-  data.addColumn('number', '{{i[0][13]}}');
+  {%for i in listOfMRNs %}
+  data.addColumn('number', '{{i}}');
   {%endfor%}
   data.addColumn({
     type: 'string',
@@ -3597,46 +3598,19 @@ function drawChart() {
   
 
  data.addRows([
-			{%if paraMeter['labelName']=="SOFA"%}
 			
 			
-			
-			
-			{%for a in range(0,lenCT)%}
-			['Day {{a}}',
-			{%for i in patientDB%}
-			{%if i[a]%}
-			{{SOFA(i[a])}},
+			{%for a in range(0,lenTT)%}
+			['Day {{a}}',			
+			{%for q in listOfMRNs%}
+			{%if chartData[q][0][a]%}
+			{{chartData[q][0][a][paraMeter['valueName']]}},
 			{%else%}
 			null,
 			{%endif%}
 			{%endfor%}
-			
 			''],
 			{%endfor%}
-			
-			
-			
-			
-			
-			
-			{%else%}
-			
-			{%for a in range(0,lenCT)%}
-			['Day {{a}}',
-			{%for i in patientDB%}
-			{%if i[a]%}
-			{{i[a][paraMeter['valueName']]}},
-			{%else%}
-			null,
-			{%endif%}
-			{%endfor%}
-			
-			''],
-			{%endfor%}
-			
-			
-		{%endif%}
 			
      
   ]);
@@ -3720,13 +3694,15 @@ Shown from: {{daysD}}<br>{%endif%}
 <a href="/displayFrom?from={{fromD}}&days={{daysD}}&labelName=Creatinine&valueName=7">Creat</a><span style="color:#4ECDC4;">>></span> 
 <a href="/displayFrom?from={{fromD}}&days={{daysD}}&labelName=pO2&valueName=17">pO2</a><span style="color:#4ECDC4;">>></span> 
 <a href="/displayFrom?from={{fromD}}&days={{daysD}}&labelName=Temperature&valueName=10">Temp</a><span style="color:#4ECDC4;">>></span> 
+<a href="/displayFrom?from={{fromD}}&days={{daysD}}&labelName=Lymphocytes&valueName=2">Lymph</a><span style="color:#4ECDC4;">>></span> 
 <a href="/displayFrom?from={{fromD}}&days={{daysD}}&labelName=MAP&valueName=21">MAP</a><span style="color:#4ECDC4;">>></span> 
-<a href="/displayFrom?from={{fromD}}&days={{daysD}}&labelName=SOFA&valueName=21">SOFA</a><span style="color:#4ECDC4;">>></span> 
+<a href="/displayFrom?from={{fromD}}&days={{daysD}}&labelName=PF ratio [kPa/1]&valueName=23">PF ratio</a><span style="color:#4ECDC4;">>></span> 
+<a href="/displayFrom?from={{fromD}}&days={{daysD}}&labelName=SOFA&valueName=24">SOFA</a><span style="color:#4ECDC4;">>></span> 
 
 </p>
 <hr>
 
-<div id="chart_div" style="margin-top:-20px;width:1000px; height: 500px; float:left"></div>
+<div id="chart_div" style="margin-top:-20px;width:100%; height: 500px; float:left"></div>
 
 </div></div>
 

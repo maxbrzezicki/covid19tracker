@@ -3612,7 +3612,7 @@ function drawChart() {
   var data = new google.visualization.DataTable();
   data.addColumn('string', 'Name');
   data.addColumn('number', 'Wcc');
-  data.addColumn('number', 'N/Lymph ratio');
+  data.addColumn('number', 'Lymph');
   data.addColumn('number', 'CRP');
   data.addColumn({
     type: 'string',
@@ -3622,12 +3622,12 @@ function drawChart() {
   
 
   data.addRows([
-			['{{patientDB[0][16]}} \n {{patientDB[0][15]}}', {{patientDB[0][1]}},{{patientDB[0][1]/patientDB[0][2]}},{{patientDB[0][5]}},'START'],
+			['{{patientDB[0][16]}} \n {{patientDB[0][15]}}', {{patientDB[0][1]}},{{patientDB[0][2]}},{{patientDB[0][5]}},'START'],
           {%for i in range(1,patientDB|length)%}
 		  {%if patientDB[i-1][16]==patientDB[i][16]%}
-		  ['{{patientDB[i][16]}} \n {{patientDB[i][15]-patientDB[0][15]}}', {{patientDB[i][1]}},{{patientDB[i][1]/patientDB[i][2]}},{{patientDB[i][5]}},null],
+		  ['{{patientDB[i][16]}} \n {{patientDB[i][15]-patientDB[0][15]}}', {{patientDB[i][1]}},{{patientDB[i][2]}},{{patientDB[i][5]}},null],
 		  {%else%}
-		  ['{{patientDB[i][16]}} \n {{patientDB[i][15]-patientDB[0][15]}}', {{patientDB[i][1]}},{{patientDB[i][1]/patientDB[i][2]}},{{patientDB[i][5]}},"{{patientDB[i][16]}}"],
+		  ['{{patientDB[i][16]}} \n {{patientDB[i][15]-patientDB[0][15]}}', {{patientDB[i][1]}},{{patientDB[i][2]}},{{patientDB[i][5]}},"{{patientDB[i][16]}}"],
 		  {%endif%}
 		  
 		  {%endfor%}
@@ -3685,12 +3685,12 @@ function drawChart2() {
   
 
   data.addRows([
-			['{{patientDB[0][16]}} \n {{patientDB[0][15]}}', {{patientDB[0][3]}},{{patientDB[0][8]}},'START'],
+			['{{patientDB[0][16]}} \n {{patientDB[0][15]}}', {{patientDB[0][3]}},{%if patientDB[0][8]%}{{patientDB[0][8]}}{%else%}null{%endif%},'START'],
           {%for i in range(1,patientDB|length)%}
 		  {%if patientDB[i-1][16]==patientDB[i][16]%}
-		  ['{{patientDB[i][16]}} \n {{patientDB[i][15]-patientDB[0][15]}}', {{patientDB[i][3]}},{{patientDB[i][8]}},null],
+		  ['{{patientDB[i][16]}} \n {{patientDB[i][15]-patientDB[0][15]}}', {{patientDB[i][3]}},{%if patientDB[i][8]%}{{patientDB[i][8]}}{%else%}null{%endif%},null],
 		  {%else%}
-		  ['{{patientDB[i][16]}} \n {{patientDB[i][15]-patientDB[0][15]}}', {{patientDB[i][3]}},{{patientDB[i][8]}},"{{patientDB[i][16]}}"],
+		  ['{{patientDB[i][16]}} \n {{patientDB[i][15]-patientDB[0][15]}}', {{patientDB[i][3]}},{%if patientDB[0][8]%}{{patientDB[i][8]}}{%else%}null{%endif%},"{{patientDB[i][16]}}"],
 		  {%endif%}
 		  
 		  {%endfor%}
@@ -3738,7 +3738,10 @@ function drawChart3() {
   var data = new google.visualization.DataTable();
   data.addColumn('string', 'Name');
   data.addColumn('number', 'RR');
+  
+  
   data.addColumn('number', 'Temp');
+  data.addColumn('number', 'MK-ICU');
   
   data.addColumn('number', 'P/F ratio');
   data.addColumn('number', 'SOFA');
@@ -3751,12 +3754,12 @@ function drawChart3() {
   
 
   data.addRows([
-			['{{patientDB[0][16]}} \n {{patientDB[0][15]}}',{{patientDB[0][11]}},{{patientDB[0][10]}},{{patientDB[0][17]| int /patientDB[0][14]| int*100}},{{SOFA(patientDB[0])}},'START'],
+			['{{patientDB[0][16]}} \n {{patientDB[0][15]}}',{{patientDB[0][11]}},{{patientDB[0][10]}},null,{{patientDB[0][17]| int /patientDB[0][14]| int*100}},{{SOFA(patientDB[0])}},'START'],
           {%for i in range(1,patientDB|length)%}
 		  {%if patientDB[i-1][16]==patientDB[i][16]%}
-		  ['{{patientDB[i][16]}} \n {{patientDB[i][15]-patientDB[0][15]}}',{{patientDB[i][11]}},{{patientDB[i][10]}},{{patientDB[i][17]| int /patientDB[i][14]| int*100}},{{SOFA(patientDB[i])}},null],
+		  ['{{patientDB[i][16]}} \n {{patientDB[i][15]-patientDB[0][15]}}',{{patientDB[i][11]}},{{patientDB[i][10]}},{{(((patientDB[i][2]-patientDB[i-1][2])*3.4+(patientDB[i][17]-patientDB[i-1][10])*0.7)/((patientDB[i][10]-patientDB[i-1][2])*1.1+(patientDB[i][24]-patientDB[i-1][24])*1))*-100}},{{patientDB[i][17]| int /patientDB[i][14]| int*100}},{{SOFA(patientDB[i])}},null],
 		  {%else%}
-		  ['{{patientDB[i][16]}} \n {{patientDB[i][15]-patientDB[0][15]}}',{{patientDB[i][11]}},{{patientDB[i][10]}},{{patientDB[i][17]| int /patientDB[i][14]| int*100}},{{SOFA(patientDB[i])}},"{{patientDB[i][16]}}"],
+		  ['{{patientDB[i][16]}} \n {{patientDB[i][15]-patientDB[0][15]}}',{{patientDB[i][11]}},{{patientDB[i][10]}},{{(((patientDB[i][2]-patientDB[i-1][2])*3.4+(patientDB[i][17]-patientDB[i-1][10])*0.7)/((patientDB[i][10]-patientDB[i-1][2])*1.1+(patientDB[i][24]-patientDB[i-1][24])*1))*-100}},{{patientDB[i][17]| int /patientDB[i][14]| int*100}},{{SOFA(patientDB[i])}},"{{patientDB[i][16]}}"],
 		  {%endif%}
 		  
 		  {%endfor%}
@@ -3771,7 +3774,7 @@ function drawChart3() {
              
             0: { color: '#20636B' },
             1: { color: '#20633B' },
-            2: { color: '#20638B' },
+            2: { color: '#000000' },
             3: { color: '#C67000' },
 			4: { color: '#FF4500' }},
 			legend: { position: "top" },
@@ -3924,7 +3927,10 @@ function drawChart5() {
 }
 
     </script>
-  
+      <link rel="apple-touch-icon" sizes="180x180" href="http://neurologicalsociety.org/covid19/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://neurologicalsociety.org/covid19/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="http://neurologicalsociety.org/covid19/favicon-16x16.png">
+
   </head>
   
 <body>
@@ -3953,6 +3959,7 @@ function drawChart5() {
 		  
         </ul>
       </div>
+	  <title> {{patientData[0][6]}} [{{patientData[0][1]}}]</title>
     </header>
 <div style="padding-top:50px;margin-left:20px;margin-right:20px;">
         
@@ -3963,9 +3970,17 @@ function drawChart5() {
 <hr>
 <i style="font-size:16px; color:#000;"><b>{{patientData[0][6]}}</b>, MRN: {{patientData[0][1]}}, is a {{patientData[0][2]}}y/o patient on {{patientDB[-1][16]}}, with PMH of {{patientData[0][3][2:]}}<br>
 {%if patientDB|length>1 %}
-This is his {{patientDB[-1][15]-patientDB[0][15]}} of admission.<br>
+This is {{patientDB[-1][15]-patientDB[0][15]}} of admission.<br>
 {%endif%}<br>
 <div id="gauge_div" style="width:280px; height: 140px;"></div></i>
+
+<hr>
+<div id="chart_div3" style="margin-left:-50px;width:100%; height: 500px; float:left"></div>
+<div id="chart_div" style="width:600px;height: 500px;float:left;"></div>
+<div id="chart_div2" style="margin-left:-50px;width: 600px; height: 500px;float:left;"></div>
+<div id="chart_div4" style="width: 600px; height: 500px;float:left;"></div>
+<div id="chart_div5" style="width: 600px; height: 500px;float:left;"></div>
+
 <h2 style="color:#000">Investigations so far</h2>
 <a href="patientList"><button>MAIN MENU</button></a>
 <a href="patients1?MRN={{patientData[0][1]}}"><button>ADD NOTE</button></a>
@@ -4026,16 +4041,10 @@ This is his {{patientDB[-1][15]-patientDB[0][15]}} of admission.<br>
 {%endfor%}
 </table>
 
-<hr>
-<div id="chart_div3" style="margin-left:-50px;width:1200px; height: 500px; float:left"></div>
-<div id="chart_div" style="width:600px;height: 500px;float:left;"></div>
-<div id="chart_div2" style="margin-left:-50px;width: 600px; height: 500px;float:left;"></div>
-<div id="chart_div4" style="width: 600px; height: 500px;float:left;"></div>
-<div id="chart_div5" style="width: 600px; height: 500px;float:left;"></div>
-
 </div></div>
 
 <div style="clear: both;"></div>
+
 <br>
 
 

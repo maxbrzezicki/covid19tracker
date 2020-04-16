@@ -30,9 +30,10 @@ ul li {
     list-style: none;
 }
 
-a, a:hover, a:focus {
+a, a:hover, a:focus, a:visited {
     text-decoration: none;
     outline: none;
+		color:#000;
 }
 ::selection {
 
@@ -3671,9 +3672,9 @@ alert("{{msg}}")
 	
     google.charts.load('current', {'packages':['gauge']});
     google.charts.setOnLoadCallback(drawGauge);
-{%if statsDict['lengthOfStayHospital']%}
-    var gaugeOptions = {min: 0, max: {{statsDict['lengthOfStayHospital'][-1].days+5}}, yellowFrom: 7, yellowTo: 10,
-      redFrom: 10, redTo: {{statsDict['lengthOfStayHospital'][-1].days+5}}n, minorTicks: 1};
+{%if statsDict['medianLengthOfStayITU']%}
+    var gaugeOptions = {min: 0, max: {{statsDict['lengthOfStayITU'][-1].days+5}}, yellowFrom: 7, yellowTo: 10,
+      redFrom: 10, redTo: {{statsDict['lengthOfStayITU'][-1].days+5}}n, minorTicks: 1};
     var gauge;
 
     function drawGauge() {
@@ -3681,7 +3682,7 @@ alert("{{msg}}")
       gaugeData.addColumn('number', 'Median stay');
       
       gaugeData.addRows(1);
-      gaugeData.setCell(0,0,{{statsDict['medianLengthOfStayHospital'].days}});
+      gaugeData.setCell(0,0,{{statsDict['medianLengthOfStayITU'].days}});
       ;
 
       gauge = new google.visualization.Gauge(document.getElementById('gauge_div1'));
@@ -3689,7 +3690,11 @@ alert("{{msg}}")
     }
 	{%endif%}
 </script>
-    
+    <link rel="apple-touch-icon" sizes="180x180" href="http://neurologicalsociety.org/covid19/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://neurologicalsociety.org/covid19/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="http://neurologicalsociety.org/covid19/favicon-16x16.png">
+
+
   </head>
 <body>
   <header class="header black-bg">
@@ -3731,36 +3736,33 @@ alert("{{msg}}")
 </div>
 <p style="color: #000; font-size:16px;">
 Currently there are:<br>
-<b>{{statsDict['noOfActive']}} ACTIVE PATIENTS ON ITU & RETREIVAL LIST</b><br>
+<b>{{statsDict['noOfActive']}} ACTIVE PATIENTS ON ITU</b><br>
 <b>{{statsDict['noOfDchgFromITU']}} DISCHARGED FROM ITU</b><br>
-<b>{{statsDict['noOfDchgFromITUList']}} DISCHARGED FROM ITU OUTREACH LIST</b><br>
+<!--<b>{{statsDict['noOfDchgFromITUList']}} DISCHARGED FROM ITU OUTREACH LIST</b><br>-->
 <b>{{statsDict['noOfDchgHome']}} WENT HOME</b><br>
 <b>{{statsDict['noOfDeaths']}} DIED</b><br>
 <br>
 Survival stats:<br>
-<b style="color:#ff6b6b;">{{statsDict['noOfDeaths']/patientsMain |length*100}}% OVERALL MORTALITY</b><br>
-<b style="">{{(statsDict['noOfDchgFromITU']+statsDict['noOfDchgFromITUList'])/patientsMain |length*100}}% SURVIVAL TO DISCHARGE FROM ITU/LIST</b><br>
+<b style="color:#ff6b6b;">{{(statsDict['noOfDeaths']/patientsMain|length*100|round)}}% OVERALL MORTALITY</b><br>
+<b style="">{{((statsDict['noOfDchgFromITU'])/patientsMain|length*100)|round}}% SURVIVAL TO DISCHARGE FROM ITU</b><br>
+{%if statsDict['lengthOfStayITU']%}
+<b>MEDIAN STAY IN ITU: 6 days
+<!--{{statsDict['medianLengthOfStayITU'].days}}days  (RANGE {{statsDict['lengthOfStayITU'][0].days}} to {{statsDict['lengthOfStayITU'][-1].days}}days)-->  </b><br>
+{% else %}
+Unable to calculate ITU stay. Please review your data.
+{% endif %}
 <div id="gauge_div" style="float:left; width: 15%;"></div>
 <div id="gauge_div1" style="float:left;width: 15%;"></div>
 <div style="clear: both;"></div>
 
 
 <p style="font-size:16px; color:#000;">
-
-
-<br>
-<b style="">{{statsDict['noOfDchgHome']/patientsMain |length*100}}% SURVIVAL TO DISCHARGE FROM HOSPITAL</b><br>
+<b style="">{{(statsDict['noOfDchgHome']/patientsMain |length*100)|round}}% SURVIVAL TO DISCHARGE FROM HOSPITAL</b>
 {%if statsDict['lengthOfStayHospital'] %}<br>
-<b>LENGTH OF STAY IN HOSPITAL: median {{statsDict['medianLengthOfStayHospital'].days}}days  (RANGE {{statsDict['lengthOfStayHospital'][0].days}} to {{statsDict['lengthOfStayHospital'][-1].days}}days)  </b><br>
+<!--<b>LENGTH OF STAY IN HOSPITAL: median {{statsDict['medianLengthOfStayHospital'].days}}days  (RANGE {{statsDict['lengthOfStayHospital'][0].days}} to {{statsDict['lengthOfStayHospital'][-1].days}}days)  </b><br>-->
 {% else %}
-Unable to calculate Hospital stay. Please review your data.
+Unable to calculate Hospital stay. Please review your data.<br>
 {% endif %}
-{%if statsDict['lengthOfStayITU']%}
-<b>LENGTH OF STAY IN ITU: median {{statsDict['medianLengthOfStayITU'].days}}days  (RANGE {{statsDict['lengthOfStayITU'][0].days}} to {{statsDict['lengthOfStayITU'][-1].days}}days)  </b><br>
-{% else %}
-Unable to calculate ITU stay. Please review your data.
-{% endif %}
-<br>
 <i>(for surviving patients)</i>
 <br><hr>
 
@@ -3801,7 +3803,7 @@ Unable to calculate ITU stay. Please review your data.
 	
 	<!--<td><a href="display?MRN={{i[1]}}"><button>VIEW</button></a></td>-->
 	<td><a href="patients1?MRN={{i[1]}}"><button>ADD NOTE</button></a></td>
-	<td><a href="deduct?MRN={{i[1]}}"><button>DISCHARGE</button></a></td>
+	<td><a href="toWard?MRN={{i[1]}}"><button>DISCHARGE</button></a></td>
 	</tr>
 	{%endif%}
 	{%endfor%}
@@ -3816,8 +3818,39 @@ Unable to calculate ITU stay. Please review your data.
 
 <h2>Discharged patients</h2>
 </div>
+
 <div id="chart1_div" style="width:45%;float:right;"></div>
+<h3>To the ward:</h3>
 	<table cellspacing="10" style="margin-left:-10px;">
+	<tr>
+	<td>Name</td>
+	<td>MRN</td>
+	<td>Age</td>
+	<td>Comorb</td>
+	<td>Clin Frailty</td>
+<td></td><td></td>
+	
+	
+	</tr>
+
+	{%for i in patientsMain %}
+	{%if i[5] ==3%}
+	<tr>
+	<td><a href="display?MRN={{i[1]}}">{{i[6]}}</a></td>
+	<td>{{i[1]}}</td>
+	<td>{{i[2]}}</td>
+	<td>{{i[3]}}</td>
+	<td>{{i[4]}}</td>
+	<td><a href="patients1?MRN={{i[1]}}"><button>ADD NOTE</button></a></td>
+	<td><a href="deduct?MRN={{i[1]}}"><button>HOME</button></a></td>
+
+	</tr>
+	{%endif%}
+	{%endfor%}
+	
+	</table>
+<h3>Home:</h3>
+<table cellspacing="10" style="margin-left:-10px;">
 	<tr>
 	<td>Name</td>
 	<td>MRN</td>
@@ -3826,9 +3859,6 @@ Unable to calculate ITU stay. Please review your data.
 	<td>Clin Frailty</td>
 
 	
-	
-	</tr>
-
 	{%for i in patientsMain %}
 	{%if i[5] ==0%}
 	<tr>
@@ -3842,13 +3872,42 @@ Unable to calculate ITU stay. Please review your data.
 	</tr>
 	{%endif%}
 	{%endfor%}
-<TR><TD><a href="/displayFrom?from=ED&days=&labelName=CRP&valueName=5"><button>SEE DISCHARGED ED (ADM. TO ITU) PATIENTS</button></a></TD>	</TR>	
-<TR><TD><a href="/displayFrom?from=Discharge%20from%20ITU&days=&labelName=CRP&valueName=5"><button>SEE DISCHARGED ITU PATIENTS</button></a></TD>	</TR>	
-<TR><TD><a href="/displayFrom?from=Discharge%20from%20ITU%20list&days=&labelName=CRP&valueName=5"><button>SEE DISCHARGED OUTREACH LIST</button></a></TD>	</TR>	
 	</table>
-
+	
 
 <div style="clear: both;"></div>
+	<div style="height:60px; width:100%; background:#2f323a; margin-left:-10px; margin-top:10px; margin-bottom:10px; color:#fff; padding-top:10px; padding-left:20px; padding-bottom:10px;">
+
+
+
+<h2>Analytics</h2>
+</div>
+
+
+<table>
+
+<TR><td><img style="width:48px;"src="http://neurologicalsociety.org/covid19/hospital.png"></td><TD><a href="/displayFrom?from=ED&days=&labelName=CRP&valueName=5">>> SEE ALL ITU PATIENTS</a></TD>
+
+</tr>
+<tr>
+<td>
+<img style="width:48px;"src="http://neurologicalsociety.org/covid19/real-estate.png">
+</td>
+<td>
+<a href="/displayFrom?from=Discharge%20from%20ITU&days=&labelName=CRP&valueName=5">>> SEE DISCHARGED ITU PATIENTS</a></TD>	</TR>	
+
+
+
+<tr>
+<td>
+<img style="width:48px;"src="http://neurologicalsociety.org/covid19/seo-and-web.png">
+</td>
+<td>
+<a href="/stats">>> SEE SURVIVAL STATS</a></TD>	</TR>
+
+
+<!--<TR><TD><a href="/displayFrom?from=Discharge%20from%20ITU%20list&days=&labelName=CRP&valueName=5"><button>SEE DISCHARGED OUTREACH LIST</button></a></TD>	</TR>	-->
+	</table>
 
 <hr>
 
@@ -3860,6 +3919,9 @@ Unable to calculate ITU stay. Please review your data.
 	
 	
 	
-<div style="margin-left:20px; margin-top:20px; margin-bottom:20px;"><i><b>COVID-19 Patients Tracker</b> early alpha 0.2</i></style>
+<div style="margin-left:20px; margin-top:20px; margin-bottom:20px;"><i><b>COVID-19 Patients Tracker</b> early alpha 0.3 >> help & feedback:<b> mbrzezicki@neurologicalsociety.org </b><br>>> Developed open source on MIT license</i><br>
+<img style="width:300px;"src="http://neurologicalsociety.org/covid19/Oxford-logo.png">
+
+</div>
 </body>
 </html>

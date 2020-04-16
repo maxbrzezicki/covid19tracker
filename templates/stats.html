@@ -3489,6 +3489,10 @@ ul.chat-available-user li a:hover {
 }
 
 </style>
+<title>STATS DASHBOARD</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="http://neurologicalsociety.org/covid19/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://neurologicalsociety.org/covid19/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="http://neurologicalsociety.org/covid19/favicon-16x16.png">
 
 </head>
     <script type="text/javascript">
@@ -3526,42 +3530,19 @@ alert("{{msg}}")
 
             <div class="content-panel" style="min-height:600px;padding:10px 10px 10px 10px;">
 			
-<h1>Admit a patient</h1>
+<h1 style="color:#000">Statistics dashboard</h1>
 <hr>
-<img style="float:right; height:70%; padding-right:20px;" src="https://images.squarespace-cdn.com/content/v1/5b5f1d4e9d5abb9699cb8a75/1584980646013-4VKNTQZ1VSOOZ75TJ891/ke17ZwdGBToddI8pDm48kDHUNFJBrpfO4Tyoa4uFeEd7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UbE5IWAZV_Kj7pDi92rsuQ7DOohjptt_XCYfaRvVJnxgm4bjm9DAHF2kOsIZRJKXnA/Clinical+Frailty+Scale.png?format=1000w">
-<img style="float:right;"src="http://neurologicalsociety.org/covid19/1.png">
-<table cellspacing="10" style="color:#000;margin-left:-10px;">
-<form method="POST" action="addPatient2">
-<tr>
-	<td>Name</td>
-	<td><input type="text" name="PName" required></td>
-	</tr>
-	<tr>
-	
-	<td>MRN</td>
-	<td><input type="text" name="MRN" required></td>
-		</tr>
-	<tr>
-	<td>Age</td>
-		<td><input type="text" name="Age" required></td>
-	</tr>
-	
-	<tr>	
-	<td>Score + PMH</td>
-	<td><input type="text" name="Comorb" required></td>
-
-</tr><tr>
-	<td>Clin Frailty</td>
-	<td><input type="number" name="ClinFrailty" required></td>
-	</tr>
-
-<tr><td></td><td><input type="submit" value="ADMIT NEW PATIENT"></td></tr>
-
-
-
-</form>
-</table>
-
+<h2 style="color:#000">KM estimate chances of staying on ITU</h2>
+<img src="http://neurologicalsociety.org/covid19/KM.png"><br>
+<h2 style="color:#000">Length of stay on ITU > Contributors</h2>
+<img src="http://neurologicalsociety.org/covid19/m1.png">
+<img src="http://neurologicalsociety.org/covid19/m2.png"><br><br>
+<h2 style="color:#000">Heatmap of correlation matrix</h2>
+<img src="http://neurologicalsociety.org/covid19/m3.png"><br><br>
+<h2 style="color:#000">Example survival analysis</h2>
+<img src="http://neurologicalsociety.org/covid19/m4.png">
+<img src="http://neurologicalsociety.org/covid19/m5.png">
+<img src="http://neurologicalsociety.org/covid19/m6.png">
 <br>
 </div></div>
 </html>
