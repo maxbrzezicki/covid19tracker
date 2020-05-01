@@ -1,6 +1,6 @@
 # covid19tracker
 Tracker for COVID19 patients on ITU list
-Current version: early alpha 0.1
+Current version: early alpha 0.4
 
 Update 06/04
 Initial repository deployed
@@ -17,4 +17,4 @@ Across-ITU view introduced
 TO DO:
 1. Testing & troubleshooting
 
-mbrzezicki@neurologicalosciety.org
+maksymilian.brzezicki@ndcn.ox.ac.uk
